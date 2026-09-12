@@ -6,9 +6,12 @@ import {
 } from "@silverbulletmd/silverbullet/lib/tree";
 import { markdown } from "@silverbulletmd/silverbullet/syscalls";
 import { Chess } from "chess.js";
-import { getChessCss, renderStaticBoardHtml } from "../chess/plug_api.ts";
-import { buildMoveList } from "../chess-engine/plug_api.ts";
-import type { MoveListEntry } from "../chess-engine/game_reviewer.ts";
+import type { MoveListEntry } from "./engine_review_types.ts";
+import {
+  buildMoveList,
+  getChessCss,
+  renderStaticBoardHtml,
+} from "./external_syscalls.ts";
 import {
   type BoardMeta,
   computeColumnGeometry,

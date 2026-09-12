@@ -17,22 +17,27 @@ vi.mock("@silverbulletmd/silverbullet/syscalls", () => ({
   },
 }));
 
-// pdf_export.ts now reaches board_renderer.ts (chess-core) via a syscall
-// instead of a direct import — mock that boundary with the real
-// implementation (which itself still needs the chess-themes mock below,
-// since board_renderer.ts fetches piece-set/board-theme data the same way).
-vi.mock("../chess/plug_api.ts", async () => {
+// pdf_export.ts now reaches board_renderer.ts (chess-core) and
+// chess-engine's buildMoveList via its own local external_syscalls.ts
+// wrapper (a syscall, not a direct import — see that file's module comment)
+// — mock that boundary with the real implementations. board_renderer.ts
+// itself goes through chess-core's OWN external_syscalls.ts for
+// piece-set/board-theme data, mocked separately below.
+vi.mock("./external_syscalls.ts", async () => {
   const boardRenderer = await import("../chess/board_renderer.ts");
+  const gameReviewer = await import("../chess-engine/game_reviewer.ts");
   return {
     getChessCss: () => Promise.resolve(boardRenderer.getChessCss()),
     renderStaticBoardHtml: (
       fen: string,
       opts?: Parameters<typeof boardRenderer.renderStaticBoardHtml>[1],
     ) => boardRenderer.renderStaticBoardHtml(fen, opts),
+    buildMoveList: (pgn: string) =>
+      Promise.resolve(gameReviewer.buildMoveList(pgn)),
   };
 });
 
-vi.mock("../chess-themes/plug_api.ts", async () => {
+vi.mock("../chess/external_syscalls.ts", async () => {
   const boardThemes = await import("../chess-themes/board_themes.ts");
   const pieceSets = await import("../chess-themes/piece_sets.ts");
   return {
@@ -48,17 +53,6 @@ vi.mock("../chess-themes/plug_api.ts", async () => {
           theme as Parameters<typeof boardThemes.generateBoardThemeCss>[0],
         ),
       ),
-  };
-});
-
-// renderPgnBlockForPdf's movetext now goes through chess-engine's plug_api
-// (chess.engine.buildMoveList syscall) instead of a direct import — mock it
-// with the real, engine-free implementation.
-vi.mock("../chess-engine/plug_api.ts", async () => {
-  const gameReviewer = await import("../chess-engine/game_reviewer.ts");
-  return {
-    buildMoveList: (pgn: string) =>
-      Promise.resolve(gameReviewer.buildMoveList(pgn)),
   };
 });
 

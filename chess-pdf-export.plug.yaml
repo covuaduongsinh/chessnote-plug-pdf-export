@@ -1,0 +1,18 @@
+name: chess-pdf-export
+functions:
+  chessRenderPageForPdf:
+    path: ./pdf_export.ts:renderPageForPdf
+    syscall:
+      name: chess.renderPageForPdf
+      description: >-
+        Dựng lại toàn bộ nội dung trang thành 1 HTML tĩnh sẵn sàng để in PDF:
+        thay mỗi khối fen/pgn/puzzle bằng ảnh bàn cờ tĩnh (không cần iframe),
+        phần còn lại render bằng markdown.markdownToHtml. boardSize (px, mặc
+        định 400, kẹp trong khoảng 150-700) chỉnh độ rộng mỗi bàn cờ. columns
+        (1 hoặc 2, mặc định 2) chỉnh số cột mỗi trang in.
+      parameters:
+        - { name: text, type: string }
+        - { name: boardSize, type: number }
+        - { name: columns, type: number }
+      returns:
+        - { type: string }
